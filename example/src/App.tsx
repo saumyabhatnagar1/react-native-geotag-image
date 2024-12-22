@@ -12,7 +12,7 @@ export default function App() {
         onPress={async () => {
           if (imagePath) {
             try {
-              const newPath = await geoTagImage(
+              await geoTagImage(
                 imagePath,
                 [`Timestamp: ${Date.now().toString()}`],
                 false

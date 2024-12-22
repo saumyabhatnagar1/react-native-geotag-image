@@ -24,6 +24,7 @@ const result = await geoTagImage(
 ```
 
 ## Android Permission
+
 Requires permission for accessing Fine or coarse location if tagUserCoordinages is set true.
 
 Add following lines in AndroidManifest.xml
