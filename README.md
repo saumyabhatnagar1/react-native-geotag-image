@@ -1,6 +1,6 @@
 # react-native-geotag-image
 
-A react native package for geo tagging the images with coordinates and address.
+A react native android package for geo tagging the images with coordinates and address.
 
 ## Installation
 
@@ -12,11 +12,25 @@ npm install react-native-geotag-image
 
 
 ```js
-import { multiply } from 'react-native-geotag-image';
+import { geoTagImage } from 'react-native-geotag-image';
 
 // ...
 
-const result = await multiply(3, 7);
+const result = await geoTagImage(
+  imagePath: string,
+  elementsList: string[],
+  tagUserCoordinates: boolean
+)
+```
+
+## Android Permission
+Requires permission for accessing Fine or coarse location if tagUserCoordinages is set true.
+
+Add following lines in AndroidManifest.xml
+```
+   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
 ```
 
 

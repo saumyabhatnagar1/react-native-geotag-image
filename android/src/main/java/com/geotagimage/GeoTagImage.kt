@@ -7,15 +7,12 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.location.Location
 import android.location.LocationManager
-import android.location.LocationProvider
 import android.net.Uri
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.TextUtils
-import android.util.Log
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -25,14 +22,15 @@ private const val PACKAGE_TAG = "GEOTAG"
 class GeoTagImage(
   context: Context, private var contentResolver: ContentResolver, private val fontSize: Float = 20f
 
-  ) {
+) {
   private var baseContext: Context = context
   private val horizontalRectPadding = 10f
   private val ellipsizeMargin = 20f
-  private val rectMarginTop = 250f
+  private val rectMarginTop = 450f
   private val rectMarginBottom = 10f
   private val staticLayoutLineSpace = 12f
-  private var locationManager: LocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+  private var locationManager: LocationManager =
+    context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
   /**
    * Adds a overlay for geotagging image with coordinates, address and timestamp
@@ -40,11 +38,14 @@ class GeoTagImage(
    * @param imagePath Path of the image
    * @return returns the path as Result
    */
-  fun addGeoOverlay(geoTagData: ArrayList<String>, imagePath: String): Result<String> {
+  fun addGeoOverlay(
+    geoTagData: ArrayList<String>,
+    imagePath: String,
+    tagUserCoordinates: Boolean
+  ): Result<String> {
 
-    Log.i(PACKAGE_TAG, "addTextOverlay")
     val imageUri = Uri.parse(imagePath)
-    Log.i(PACKAGE_TAG, imageUri.toString())
+
     val bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(imageUri))
     val bitmapOutputImage = bitmap.copy(Bitmap.Config.ARGB_8888, true)
 
@@ -61,18 +62,19 @@ class GeoTagImage(
       rectPaint
     )
     val textX = horizontalRectPadding + 10
-    var textY = canvas.height - (rectMarginTop - 50f)
+    var textY = canvas.height - (rectMarginTop - 30f)
 
     val textPaint = TextPaint()
     textPaint.color = Color.WHITE
     textPaint.textSize = fontSize
 
-    val locationString = fetchLocation()
     val elementList: ArrayList<String> = ArrayList(geoTagData)
+    if (tagUserCoordinates) {
+      val locationString = fetchLocation()
+      elementList.add(locationString)
+    }
 
-    elementList.add(locationString)
-
-    for (item in geoTagData) {
+    for (item in elementList) {
       val ellipsizeText = TextUtils.ellipsize(
         item,
         textPaint,
@@ -120,7 +122,7 @@ class GeoTagImage(
         imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream)
         outStream.flush()
       }
-      return file.absolutePath
+      return Uri.fromFile(file).toString()
     } catch (e: IOException) {
       return null
     }
@@ -142,25 +144,24 @@ class GeoTagImage(
     return Result.failure(Throwable("File does not exists"))
   }
 
-  fun fetchLocation(): String {
+  private fun fetchLocation(): String {
     val hasGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
     val hasNetwork = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
-
-      if (baseContext.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(
-          Manifest.permission.ACCESS_COARSE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-      ) {
-        if (hasGps)
+    if (baseContext.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && baseContext.checkSelfPermission(
+        Manifest.permission.ACCESS_COARSE_LOCATION
+      ) == PackageManager.PERMISSION_GRANTED
+    ) {
+      if (hasGps)
         locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)?.let {
-          return "${it.latitude} ${it.longitude}"
+          return "User Coordinates: ${it.latitude} ${it.longitude}"
         }
-        if (hasNetwork){
-          locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)?.let {
-            return "${it.latitude} ${it.longitude}"
-          }
+      if (hasNetwork) {
+        locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)?.let {
+          return "User Coordinate: ${it.latitude} ${it.longitude}"
         }
       }
+    }
     return "Unable to fetch location"
- }
+  }
 }

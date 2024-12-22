@@ -17,6 +17,26 @@ const GeotagImage = NativeModules.GeotagImage
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return GeotagImage.multiply(a, b);
+/**
+ * Geotags image
+ * @param imagePath URI of the image
+ * @param elementsList Elements to be placed on the image, can be exif data of the image
+ * @param tagUserCoordinates If the user coordinates are to be placed on the image
+ * @returns Promise with new imagePath or error
+ */
+export function geoTagImage(
+  imagePath: string,
+  elementsList: string[],
+  tagUserCoordinates: boolean
+): string {
+  return GeotagImage.geoTagImage(elementsList, imagePath, tagUserCoordinates);
+}
+
+/**
+ * Deletes the geotagged Image, if not required further
+ * @param imageString The path of the image to be deleted
+ * @returns Promise with success or error
+ */
+export function deleteGeoTaggedImage(imageString: string) {
+  return GeotagImage.deleteGeoTagImage(imageString);
 }

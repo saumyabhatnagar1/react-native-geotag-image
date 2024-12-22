@@ -22,6 +22,7 @@ class GeotagImageModule(reactContext: ReactApplicationContext) :
   fun geoTagImage(
     geoTagData: ReadableArray,
     imagePath: String,
+    tagUserCoordinates: Boolean,
     promise: Promise
   ) {
 
@@ -29,7 +30,7 @@ class GeotagImageModule(reactContext: ReactApplicationContext) :
     for(i in 0 until geoTagData.size()){
       elementsList.add(geoTagData.getString(i))
     }
-    val imagePathResult = geoTagImage.addGeoOverlay(elementsList, imagePath)
+    val imagePathResult = geoTagImage.addGeoOverlay(elementsList, imagePath, tagUserCoordinates)
 
     imagePathResult.onSuccess {
       promise.resolve(it)

@@ -1,12 +1,26 @@
-import { useState, useEffect } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { View, StyleSheet, Button } from 'react-native';
+import { geoTagImage } from 'react-native-geotag-image';
 
 export default function App() {
-  const [result, setResult] = useState<number | undefined>(0);
+  const [imagePath, _setImagePath] = useState<string | undefined>();
 
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Button
+        title="Geotag Image"
+        onPress={async () => {
+          if (imagePath) {
+            try {
+              const newPath = await geoTagImage(
+                imagePath,
+                [`Timestamp: ${Date.now().toString()}`],
+                false
+              );
+            } catch (e) {}
+          }
+        }}
+      />
     </View>
   );
 }
